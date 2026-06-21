@@ -1,0 +1,13 @@
+# .swarm/node.yaml — Carte d'identite holographique
+# Chaque repo gerivdb possede ce fichier : c'est son ADN dans l'organisme
+# Le SWARM central lit ces fichiers (local + API GitHub) pour construire la topologie
+# IntentHash: 0xSWARM_NODE_GENOME_20260622
+node:
+  name: Alfred
+  full_name: gerivdb/Alfred
+  url: https://github.com/gerivdb/Alfred
+  layer: L1_CAUSALITY
+  role: "Alfred orchestrator"
+  lens: warm
+  phi_cps: 1.0
+  do_not_create: true
