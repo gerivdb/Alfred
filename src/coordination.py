@@ -6,7 +6,7 @@ Core coordination module for gerivdb ecosystem.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
 
@@ -57,7 +57,7 @@ class AlfredCoordinator:
     def _append_wal(self, action: str, **kwargs: object) -> None:
         """Append entry to WAL."""
         entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "action": action,
             "state": self.current_state.value,
             **kwargs,

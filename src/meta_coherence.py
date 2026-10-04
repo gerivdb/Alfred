@@ -6,7 +6,7 @@ Validates cross-repo consistency for gerivdb ecosystem.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 
@@ -23,7 +23,7 @@ class CoherenceReport:
         return {
             "repo": self.repo,
             "is_coherent": self.is_coherent,
-            "checked_at": self.checked_at.isoformat() + "Z",
+            "checked_at": datetime.now(timezone.utc).isoformat(),
             "issues": self.issues,
         }
 
@@ -42,14 +42,14 @@ class MetaCoherenceChecker:
             report = CoherenceReport(
                 repo=repo,
                 is_coherent=True,
-                checked_at=datetime.utcnow(),
+                checked_at=datetime.now(timezone.utc),
                 issues=[],
             )
         else:
             report = CoherenceReport(
                 repo=repo,
                 is_coherent=False,
-                checked_at=datetime.utcnow(),
+                checked_at=datetime.now(timezone.utc),
                 issues=issues,
             )
         self.reports.append(report)

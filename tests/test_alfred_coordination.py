@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.coordination import AlfredCoordinator, CoordinationState, CoordinationTask
 from src.meta_coherence import CoherenceReport, MetaCoherenceChecker
@@ -27,7 +27,7 @@ def test_dispatch_tasks_sets_coordination_state() -> None:
             repo="gerivdb/GOVERNANCE-HUB",
             action="create_branch",
             payload={},
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
     ]
     coordinator.dispatch_tasks(tasks)
@@ -64,7 +64,7 @@ def test_coherence_report_to_dict() -> None:
     report = CoherenceReport(
         repo="gerivdb/GOVERNANCE-HUB",
         is_coherent=True,
-        checked_at=datetime.utcnow(),
+        checked_at=datetime.now(timezone.utc),
         issues=[],
     )
     data = report.to_dict()
