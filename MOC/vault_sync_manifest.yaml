@@ -1,0 +1,14 @@
+sync_manifest_version: "2.1.0"
+stratum_target: "ENV3 / NotebookLM Vault"
+source_env: "ENV2 (HP Z600 Workstation)"
+sync_rules:
+  - trigger: "SUCCESSFUL_LOCAL_TEST_SUITE"
+    target_repo: "gerivdb/Alfred"
+    payload_to_sync:
+      - "tests/test_agent_manager_fastapi.py"
+      - "runners/agent_manager_fastapi.py"
+    destination_vault: "GERIVDB-ENV3-Semantic-Leap-Vault"
+    format: "Markdown Bundle (.md)"
+  - trigger: "HITL_APPROVED_PUSH"
+    action: "ARCHIVE_STATE_ROLLUP"
+    guardrails_checked: ["gf-01", "gf-07", "KEEL-R10", "D4-GUARD"]
