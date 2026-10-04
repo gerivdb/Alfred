@@ -125,3 +125,60 @@ class CoordinationRunner:
             "details": status.get("stdout", ""),
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
+
+    def run_branch_lifecycle(self, repo: str, default_branch: str = "main") -> Dict[str, Any]:
+        """Intègre le skill branch-lifecycle : analyse, classification et préconisations avant mutation."""
+        correlation_id = uuid.uuid4().hex[:8]
+        self.wal.append(
+            "run_branch_lifecycle",
+            repo=repo,
+            default_branch=default_branch,
+            correlation_id=correlation_id,
+        )
+        context_check = self.verify_and_clean_branch_context(repo)
+        if context_check.get("status") == "blocked":
+            return {
+                "runner": self.runner_name,
+                "action": "run_branch_lifecycle",
+                "repo": repo,
+                "correlation_id": correlation_id,
+                "status": "blocked",
+                "reason": context_check.get("reason"),
+                "gate": "G-PERIMETER",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        branches_res = run_git_command(["branch", "--list"], cwd=repo)
+        branches = [b.strip("* ") for b in (branches_res.get("stdout") or "").splitlines() if b.strip()]
+        recommendations = []
+        for branch in branches:
+            if branch == default_branch:
+                continue
+            ahead = run_git_command(["log", "--oneline", f"{default_branch}..{branch}"], cwd=repo)
+            behind = run_git_command(["log", "--oneline", f"{branch}..{default_branch}"], cwd=repo)
+            ahead_count = len((ahead.get("stdout") or "").splitlines())
+            behind_count = len((behind.get("stdout") or "").splitlines())
+            if ahead_count == 0:
+                recommendation = "DELETE"
+            elif behind_count == 0 and ahead_count > 0:
+                recommendation = "PR_MERGE"
+            else:
+                recommendation = "CHERRY_PICK"
+            recommendations.append({
+                "branch": branch,
+                "ahead": ahead_count,
+                "behind": behind_count,
+                "recommendation": recommendation,
+            })
+        return {
+            "runner": self.runner_name,
+            "action": "run_branch_lifecycle",
+            "repo": repo,
+            "correlation_id": correlation_id,
+            "status": "success",
+            "gate": "G0",
+            "default_branch": default_branch,
+            "branch_count": len(recommendations),
+            "recommendations": recommendations,
+            "worktree_pruned": context_check.get("worktree_pruned"),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
