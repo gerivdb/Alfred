@@ -3,7 +3,7 @@ Tests d'intégration FastAPI — endpoints Alfred.
 """
 from __future__ import annotations
 
-import importlib
+import importlib.util
 import sys
 from pathlib import Path
 
@@ -11,14 +11,15 @@ import pytest
 from fastapi.testclient import TestClient
 
 ALFRED = Path(__file__).resolve().parents[1]
-FASTAPI_MODULE = "Alfred.runners.agent_manager_fastapi"
+FASTAPI_PATH = ALFRED / "runners" / "agent_manager_fastapi.py"
 
 
 def _import_app():
-    if str(ALFRED) not in sys.path:
-        sys.path.insert(0, str(ALFRED))
-    importlib.import_module("Alfred")
-    module = importlib.import_module(FASTAPI_MODULE)
+    if str(ALFRED.parent) not in sys.path:
+        sys.path.insert(0, str(ALFRED.parent))
+    spec = importlib.util.spec_from_file_location("Alfred.runners.agent_manager_fastapi", FASTAPI_PATH)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
     return module.app
 
 
@@ -39,3 +40,4 @@ def test_alfred_wal_status_endpoint() -> None:
     body = response.json()
     assert body["action"] == "wal_status"
     assert "wal_path" in body
+

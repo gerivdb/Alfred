@@ -14,9 +14,11 @@ from pydantic import BaseModel
 _ALFRED_REPO = Path(__file__).resolve().parents[1]
 if str(_ALFRED_REPO) not in sys.path:
     sys.path.insert(0, str(_ALFRED_REPO))
+if str(_ALFRED_REPO.parent) not in sys.path:
+    sys.path.insert(0, str(_ALFRED_REPO.parent))
 
 from Alfred.runners.coordination_runner import CoordinationRunner
-from Alfred.src.gitex import resolve_conflict_strategy
+from Alfred.src.gitex import resolve_conflict_strategy, run_git_command
 from Alfred.src.syncx import robust_sync_push
 
 app = FastAPI(
@@ -84,3 +86,24 @@ def api_push(payload: PushRequest) -> Dict[str, Any]:
 def api_wal_status() -> Dict[str, Any]:
     """Statut du WAL (Write-Ahead Logging) d'Alfred."""
     return runner.wal_status()
+
+
+@app.get("/alfred/branches")
+def api_branches() -> Dict[str, Any]:
+    """Analyse et classifie l'état des branches via le runner de cycle de vie."""
+    return runner.run_branch_lifecycle(".")
+
+
+@app.post("/alfred/merge")
+def api_merge(branch: str = Query(...), strategy: str = Query("ours")) -> Dict[str, Any]:
+    """Exécute un merge sécurisé avec gestion de stratégie de conflit."""
+    merge_res = run_git_command(["merge", "--no-commit", "--no-ff", branch], cwd=".")
+    if merge_res.get("conflict", False) or not merge_res["ok"]:
+        resolution = resolve_conflict_strategy(strategy, path=".", cwd=".")
+        return {
+            "status": "resolved_with_strategy" if resolution["ok"] else "conflict_failed",
+            "strategy": strategy,
+            "merge_result": merge_res,
+            "resolution_result": resolution,
+        }
+    return {"status": "success", "merge_result": merge_res}
