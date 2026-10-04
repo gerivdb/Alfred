@@ -1,0 +1,30 @@
+{
+  "agent": "Alfred",
+  "version": "1.1.0",
+  "environment": "ENV2",
+  "status": "active_on_origin_main",
+  "latest_commit": "c8719400e29d9a9312e969abcb2cb7628b06feda",
+  "manifest_generated_at_utc": "2026-10-04T23:11:32Z",
+  "capabilities": [
+    "gitex_real_ops_and_conflicts",
+    "syncx_robust_push_pull_fetch",
+    "fastapi_agent_manager",
+    "branch_lifecycle_gates"
+  ],
+  "endpoints": [
+    "/alfred/health",
+    "/alfred/check",
+    "/alfred/fetch",
+    "/alfred/pull",
+    "/alfred/push",
+    "/alfred/branches",
+    "/alfred/merge",
+    "/alfred/wal-status"
+  ],
+  "modules": {
+    "gitex": "Alfred/src/gitex.py",
+    "syncx": "Alfred/src/syncx.py",
+    "coordination_runner": "Alfred/runners/coordination_runner.py",
+    "agent_manager_fastapi": "Alfred/runners/agent_manager_fastapi.py"
+  }
+}
