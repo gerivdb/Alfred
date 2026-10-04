@@ -209,3 +209,49 @@ class CoordinationRunner:
             "worktree_pruned": context_check.get("worktree_pruned"),
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
+
+    def coordinated_pull_and_resolve(
+        self,
+        remote: str = "origin",
+        branch: str = "main",
+        conflict_strategy: str = "ours",
+        repo_path: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Exécute un pull robuste et applique une stratégie de résolution si conflit."""
+        from Alfred.src.syncx import robust_sync_pull
+        from Alfred.src.gitex import resolve_conflict_strategy
+
+        correlation_id = uuid.uuid4().hex[:8]
+        self.wal.append(
+            "coordinated_pull_and_resolve",
+            remote=remote,
+            branch=branch,
+            conflict_strategy=conflict_strategy,
+            repo=repo_path,
+            correlation_id=correlation_id,
+        )
+        pull_res = robust_sync_pull(remote=remote, branch=branch, cwd=repo_path)
+        if pull_res.get("status") == "conflict":
+            resolution = resolve_conflict_strategy(conflict_strategy, path=".", cwd=repo_path)
+            return {
+                "runner": self.runner_name,
+                "action": "coordinated_pull_and_resolve",
+                "repo": repo_path,
+                "correlation_id": correlation_id,
+                "coordination_action": "pull_and_resolve",
+                "pull_status": "conflict",
+                "resolved": resolution.get("ok", False),
+                "resolution_details": resolution,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        return {
+            "runner": self.runner_name,
+            "action": "coordinated_pull_and_resolve",
+            "repo": repo_path,
+            "correlation_id": correlation_id,
+            "coordination_action": "pull_only",
+            "pull_status": pull_res.get("status"),
+            "resolved": True,
+            "details": pull_res,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }

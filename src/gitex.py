@@ -60,3 +60,33 @@ def _run_git(repo_path: str, args: List[str]) -> Dict[str, Any]:
 def run_git_command(args: List[str], cwd: Optional[str] = None) -> Dict[str, Any]:
     """Exécute une commande git et retourne un dictionnaire structuré."""
     return _run_git(cwd or ".", args)
+
+
+def resolve_conflict_strategy(strategy: str, path: str = ".", cwd: Optional[str] = None) -> Dict[str, Any]:
+    """Applique une stratégie de résolution de conflits : 'ours' ou 'theirs'."""
+    if strategy not in ("ours", "theirs"):
+        return {
+            "ok": False,
+            "stdout": "",
+            "stderr": "",
+            "error": "INVALID_CONFLICT_STRATEGY",
+            "conflict": False,
+        }
+    repo_path = cwd or "."
+    checkout = _run_git(repo_path, ["checkout", f"--{strategy}", path])
+    if not checkout.get("ok"):
+        return {
+            "ok": False,
+            "stdout": "",
+            "stderr": checkout.get("stderr") or checkout.get("error"),
+            "error": "STRATEGY_CHECKOUT_FAILED",
+            "conflict": False,
+        }
+    add = _run_git(repo_path, ["add", path])
+    return {
+        "ok": add.get("ok", False),
+        "stdout": add.get("stdout") or f"Conflict resolved using strategy '{strategy}' for path '{path}'.",
+        "stderr": add.get("stderr") or "",
+        "error": None if add.get("ok") else "STAGING_FAILED",
+        "conflict": False,
+    }
