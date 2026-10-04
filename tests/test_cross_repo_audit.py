@@ -37,3 +37,6 @@ def test_cross_repo_audit_reports_ok() -> None:
     assert report["endpoints_present"]["/alfred/merge"] is True
     assert "governance_hub" in report
     assert "topos" in report
+    assert "brain" in report
+    assert "ctulu" in report
+    assert "kg_l" in report

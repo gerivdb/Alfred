@@ -1,6 +1,6 @@
 """
 Alfred Cross-Repo Audit Runner.
-Vérifie la cohérence inter-dépôts : registres GOVERNANCE-HUB et TOPOS.
+Vérifie la cohérence inter-dépôts : registres GOVERNANCE-HUB, TOPOS, BRAIN, CTULU, KG-L.
 """
 from __future__ import annotations
 
@@ -18,6 +18,9 @@ class CrossRepoAuditRunner:
         self.manifest_path = self.moc_dir / "ALFRED-VAULT-MANIFEST.json"
         self.gov_hub = Path("D:/DO/WEB/TOOLS/L0-CANON/GOVERNANCE-HUB")
         self.topos = Path("D:/DO/WEB/TOOLS/L1-INFRA/TOPOS")
+        self.brain = Path("D:/DO/WEB/TOOLS/L0-CANON/BRAIN")
+        self.ctulu = Path("D:/DO/WEB/TOOLS/L4-TOOLS/CTULU")
+        self.kg_l = Path("D:/DO/WEB/TOOLS/L4-TOOLS/KG-L")
 
     def audit(self) -> Dict[str, Any]:
         """Exécute l'audit complet et retourne un rapport structuré."""
@@ -30,6 +33,9 @@ class CrossRepoAuditRunner:
             "endpoints_present": self._check_endpoints(),
             "governance_hub": self._audit_governance_hub(),
             "topos": self._audit_topos(),
+            "brain": self._audit_brain(),
+            "ctulu": self._audit_ctulu(),
+            "kg_l": self._audit_kg_l(),
             "overall": "OK",
         }
 
@@ -40,6 +46,9 @@ class CrossRepoAuditRunner:
             report["overall"] = "BLOCKED"
 
         if report["governance_hub"].get("status") != "OK" or report["topos"].get("status") != "OK":
+            report["overall"] = "BLOCKED"
+
+        if report["brain"].get("status") != "OK" or report["ctulu"].get("status") != "OK" or report["kg_l"].get("status") != "OK":
             report["overall"] = "BLOCKED"
 
         return report
@@ -122,4 +131,49 @@ class CrossRepoAuditRunner:
             except (json.JSONDecodeError, OSError):
                 result["status"] = "BLOCKED"
                 result["reason"] = "repos.json invalid"
+        return result
+
+    def _audit_brain(self) -> Dict[str, Any]:
+        """Audit du dépôt BRAIN."""
+        result: Dict[str, Any] = {"status": "OK", "files": {}}
+        if not self.brain.exists():
+            result["status"] = "BLOCKED"
+            result["reason"] = "BRAIN path not found"
+            return result
+        for name in ["README.md", "design.yaml", "ECOS_ROOT.json"]:
+            path = self.brain / name
+            result["files"][name] = path.exists()
+            if not path.exists():
+                result["status"] = "BLOCKED"
+                result.setdefault("missing", []).append(name)
+        return result
+
+    def _audit_ctulu(self) -> Dict[str, Any]:
+        """Audit du dépôt CTULU."""
+        result: Dict[str, Any] = {"status": "OK", "files": {}}
+        if not self.ctulu.exists():
+            result["status"] = "BLOCKED"
+            result["reason"] = "CTULU path not found"
+            return result
+        for name in ["README.md", "design.yaml", "ECOS_ROOT.json"]:
+            path = self.ctulu / name
+            result["files"][name] = path.exists()
+            if not path.exists():
+                result["status"] = "BLOCKED"
+                result.setdefault("missing", []).append(name)
+        return result
+
+    def _audit_kg_l(self) -> Dict[str, Any]:
+        """Audit du dépôt KG-L."""
+        result: Dict[str, Any] = {"status": "OK", "files": {}}
+        if not self.kg_l.exists():
+            result["status"] = "BLOCKED"
+            result["reason"] = "KG-L path not found"
+            return result
+        for name in ["README.md", "design.yaml", "citizens.yaml"]:
+            path = self.kg_l / name
+            result["files"][name] = path.exists()
+            if not path.exists():
+                result["status"] = "BLOCKED"
+                result.setdefault("missing", []).append(name)
         return result
