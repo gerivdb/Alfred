@@ -85,6 +85,33 @@ class CoordinationRunner:
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
+    def run_meta_coherence_check(self, repo: str) -> Dict[str, Any]:
+        """Vérifie la méta-coherence locale et cross-repo avant mutation critique."""
+        correlation_id = uuid.uuid4().hex[:8]
+        self.wal.append(
+            "run_meta_coherence_check",
+            repo=repo,
+            correlation_id=correlation_id,
+        )
+        required_dirs = ["MOC", "PRD-MOC", "INTENTS"]
+        missing_structures = [d for d in required_dirs if not Path(repo, d).is_dir()]
+        local_status = "success" if not missing_structures else "failed"
+        cross_repo = self.checker.check_repos([repo])
+        cross_results = [report.to_dict() for report in cross_repo]
+        overall_ok = local_status == "success" and all(r.get("is_coherent") for r in cross_results)
+        return {
+            "runner": self.runner_name,
+            "action": "run_meta_coherence_check",
+            "repo": repo,
+            "correlation_id": correlation_id,
+            "status": "success" if overall_ok else "failed",
+            "gate": "G0" if overall_ok else "G-PERIMETER",
+            "local_status": local_status,
+            "missing_structures": missing_structures,
+            "cross_repo_results": cross_results,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
     def wal_status(self) -> Dict[str, Any]:
         """Retourne le statut WAL."""
         return {
