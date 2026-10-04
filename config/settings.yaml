@@ -1,0 +1,22 @@
+---
+name: alfred
+version: "1.0.0"
+status: active
+layer: L0
+type: citizen
+profile: STANDARD
+intent_hash: 0xALFRED_CONFIG_20261004
+role: Operational Coordination Assistant
+capabilities:
+  - branch-lifecycle
+  - pre-push-coordination
+  - meta-coherence-check
+  - wal-orchestration
+dependencies:
+  - bat-family-agents
+  - session-boot-sequence
+  - pr-merge-strategy
+governance:
+  prd_moc: PRD-MOC/PRD-MOC-ALFRED-MASTER-20261004.md
+  moc: MOC/MOC-ALFRED.md
+  intent_hash: 0xPRD_MOC_ALFRED_ECOSYSTEM_INTEGRATION_20261004
