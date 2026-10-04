@@ -20,6 +20,7 @@ if str(_ALFRED_REPO.parent) not in sys.path:
 from Alfred.runners.coordination_runner import CoordinationRunner
 from Alfred.src.gitex import resolve_conflict_strategy, run_git_command
 from Alfred.src.syncx import robust_sync_push
+from Alfred.runners.cross_repo_audit_runner import CrossRepoAuditRunner
 
 app = FastAPI(
     title="Alfred Agent Manager API",
@@ -107,3 +108,12 @@ def api_merge(branch: str = Query(...), strategy: str = Query("ours")) -> Dict[s
             "resolution_result": resolution,
         }
     return {"status": "success", "merge_result": merge_res}
+
+
+@app.get("/alfred/audit")
+def api_audit() -> Dict[str, Any]:
+    """Exécute l'audit inter-dépôts étendu et retourne le rapport JSON."""
+    audit_runner = CrossRepoAuditRunner(_ALFRED_REPO)
+    report = audit_runner.audit()
+    report["intent_hash"] = "0xH0_ALFRED_API_AUDIT_20261005T014800Z"
+    return report

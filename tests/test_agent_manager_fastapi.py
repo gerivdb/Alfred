@@ -15,8 +15,8 @@ FASTAPI_PATH = ALFRED / "runners" / "agent_manager_fastapi.py"
 
 
 def _import_app():
-    if str(ALFRED.parent) not in sys.path:
-        sys.path.insert(0, str(ALFRED.parent))
+    if str(ALFRED) not in sys.path:
+        sys.path.insert(0, str(ALFRED))
     spec = importlib.util.spec_from_file_location("Alfred.runners.agent_manager_fastapi", FASTAPI_PATH)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -41,3 +41,16 @@ def test_alfred_wal_status_endpoint() -> None:
     assert body["action"] == "wal_status"
     assert "wal_path" in body
 
+
+def test_alfred_audit_endpoint() -> None:
+    response = client.get("/alfred/audit")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["agent"] == "Alfred"
+    assert "overall" in body
+    assert "governance_hub" in body
+    assert "topos" in body
+    assert "brain" in body
+    assert "ctulu" in body
+    assert "kg_l" in body
+    assert body["intent_hash"] == "0xH0_ALFRED_API_AUDIT_20261005T014800Z"
