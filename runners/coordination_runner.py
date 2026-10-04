@@ -255,3 +255,33 @@ class CoordinationRunner:
             "details": pull_res,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
+
+    def coordinated_fetch(
+        self,
+        remote: str = "origin",
+        prune: bool = True,
+        repo_path: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Exécute un fetch robuste et retourne un statut de coordination structuré."""
+        from Alfred.src.syncx import robust_sync_fetch
+
+        correlation_id = uuid.uuid4().hex[:8]
+        self.wal.append(
+            "coordinated_fetch",
+            remote=remote,
+            prune=prune,
+            repo=repo_path,
+            correlation_id=correlation_id,
+        )
+        fetch_res = robust_sync_fetch(remote=remote, prune=prune, cwd=repo_path)
+        return {
+            "runner": self.runner_name,
+            "action": "coordinated_fetch",
+            "repo": repo_path,
+            "correlation_id": correlation_id,
+            "coordination_action": "fetch_only",
+            "fetch_status": fetch_res.get("status"),
+            "success": fetch_res.get("status") == "success",
+            "details": fetch_res,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
