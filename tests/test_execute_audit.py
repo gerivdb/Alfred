@@ -4,6 +4,7 @@ Tests d'intégration — Execute Audit Runner Alfred.
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -29,4 +30,18 @@ def test_execute_audit_runs_successfully() -> None:
     assert report["manifest_present"] is True
     assert report["governance_hub"]["status"] == "OK"
     assert report["topos"]["status"] == "OK"
-    assert "executed_at_utc" in report
+    assert "timestamp_utc" in report
+
+
+def test_sync_vault_generates_manifest() -> None:
+    module = _import_execute_audit()
+    sync_result = module.sync_vault()
+    assert sync_result["coordination_action"] == "vault_sync"
+    assert sync_result["status"] == "success"
+    assert "manifest" in sync_result
+    assert sync_result["intent_hash"] == "0xH0_ALFRED_AUTO_VAULT_SYNC_20261005T021100Z"
+    manifest_path = ALFRED / "MOC" / "ALFRED-VAULT-MANIFEST.json"
+    assert manifest_path.exists()
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert data["agent"] == "Alfred"
+    assert "latest_commit" in data
