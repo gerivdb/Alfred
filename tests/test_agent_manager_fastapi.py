@@ -54,3 +54,13 @@ def test_alfred_audit_endpoint() -> None:
     assert "ctulu" in body
     assert "kg_l" in body
     assert body["intent_hash"] == "0xH0_ALFRED_API_AUDIT_20261005T014800Z"
+
+
+def test_alfred_vault_sync_endpoint() -> None:
+    response = client.post("/alfred/vault-sync")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["coordination_action"] == "vault_sync"
+    assert body["status"] == "success"
+    assert "manifest" in body
+    assert body["intent_hash"] == "0xH0_ALFRED_VAULT_SYNC_20261005T020300Z"

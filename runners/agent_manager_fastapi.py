@@ -21,6 +21,7 @@ from Alfred.runners.coordination_runner import CoordinationRunner
 from Alfred.src.gitex import resolve_conflict_strategy, run_git_command
 from Alfred.src.syncx import robust_sync_push
 from Alfred.runners.cross_repo_audit_runner import CrossRepoAuditRunner
+from Alfred.runners.vault_sync_runner import generate_alfred_manifest
 
 app = FastAPI(
     title="Alfred Agent Manager API",
@@ -117,3 +118,15 @@ def api_audit() -> Dict[str, Any]:
     report = audit_runner.audit()
     report["intent_hash"] = "0xH0_ALFRED_API_AUDIT_20261005T014800Z"
     return report
+
+
+@app.post("/alfred/vault-sync")
+def api_vault_sync() -> Dict[str, Any]:
+    """Déclenche la synchronisation du manifeste Alfred vers le vault NotebookLM."""
+    manifest = generate_alfred_manifest()
+    return {
+        "coordination_action": "vault_sync",
+        "status": "success",
+        "manifest": manifest,
+        "intent_hash": "0xH0_ALFRED_VAULT_SYNC_20261005T020300Z",
+    }
