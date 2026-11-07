@@ -49,5 +49,26 @@ def wal_status() -> None:
     click.echo(f"WAL entries: {count}")
 
 
+@cli.command()
+def topology() -> None:
+    """Scan SOT vs physical disk for topology drifts."""
+    from scripts.scan_topology import main as topology_main
+    sys.exit(topology_main())
+
+
+@cli.command()
+def deps() -> None:
+    """Audit dependency version conflicts across requirements files."""
+    from scripts.audit_dependencies import main as deps_main
+    sys.exit(deps_main())
+
+
+@cli.command()
+def hygiene() -> None:
+    """Scan workspace for junk files, orphan node_modules, stubs, and TODOs."""
+    from scripts.clean_workspace import main as hygiene_main
+    sys.exit(hygiene_main())
+
+
 if __name__ == "__main__":
     sys.exit(cli())
