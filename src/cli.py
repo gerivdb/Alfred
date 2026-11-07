@@ -10,9 +10,20 @@ from pathlib import Path
 
 import click
 
-from .coordination import AlfredCoordinator
-from .meta_coherence import MetaCoherenceChecker
-from .wal_writer import WALWriter
+try:
+    from .coordination import AlfredCoordinator
+    from .meta_coherence import MetaCoherenceChecker
+    from .wal_writer import WALWriter
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent))
+    from coordination import AlfredCoordinator  # noqa: E402
+    from meta_coherence import MetaCoherenceChecker  # noqa: E402
+    from wal_writer import WALWriter  # noqa: E402
+
+# Racine d'Alfred pour les imports scripts.* en exécution directe
+_ALFRED_ROOT = Path(__file__).resolve().parents[1]
+if str(_ALFRED_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ALFRED_ROOT))
 
 
 @click.group()
@@ -50,24 +61,48 @@ def wal_status() -> None:
 
 
 @cli.command()
-def topology() -> None:
+@click.option("--json", is_flag=True, help="Sortie JSON (toujours activée pour les scripts)")
+def topology(json: bool) -> None:
     """Scan SOT vs physical disk for topology drifts."""
     from scripts.scan_topology import main as topology_main
-    sys.exit(topology_main())
+    _old_argv = sys.argv[:]
+    sys.argv = ["scan_topology.py", "--json"]
+    try:
+        sys.exit(topology_main())
+    except SystemExit:
+        raise
+    finally:
+        sys.argv = _old_argv
 
 
 @cli.command()
-def deps() -> None:
+@click.option("--json", is_flag=True, help="Sortie JSON (toujours activée pour les scripts)")
+def deps(json: bool) -> None:
     """Audit dependency version conflicts across requirements files."""
     from scripts.audit_dependencies import main as deps_main
-    sys.exit(deps_main())
+    _old_argv = sys.argv[:]
+    sys.argv = ["audit_dependencies.py", "--json"]
+    try:
+        sys.exit(deps_main())
+    except SystemExit:
+        raise
+    finally:
+        sys.argv = _old_argv
 
 
 @cli.command()
-def hygiene() -> None:
+@click.option("--json", is_flag=True, help="Sortie JSON (toujours activée pour les scripts)")
+def hygiene(json: bool) -> None:
     """Scan workspace for junk files, orphan node_modules, stubs, and TODOs."""
     from scripts.clean_workspace import main as hygiene_main
-    sys.exit(hygiene_main())
+    _old_argv = sys.argv[:]
+    sys.argv = ["clean_workspace.py", "--json"]
+    try:
+        sys.exit(hygiene_main())
+    except SystemExit:
+        raise
+    finally:
+        sys.argv = _old_argv
 
 
 if __name__ == "__main__":
