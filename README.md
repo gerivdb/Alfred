@@ -54,8 +54,18 @@ reports = checker.check_repos(["gerivdb/GOVERNANCE-HUB", "gerivdb/CTULU"])
 - **Entity Type**: CITIZEN
 - **Status**: active
 
-## Limitations connues (V1.0.0)
+## Capacités opérationnelles (V1.1.0)
 
-- `src/coordination.py` : `coordinate_branches()` retourne `[]` (placeholder, aucune branche n'est coordonnée à l'exécution).
-- `src/meta_coherence.py` : `check_repo()` retourne toujours `is_coherent=True` (placeholder, aucune vérification réelle n'est effectuée).
-- Ces fonctions sont des **stubs** en attente d'implémentation réelle. Ne pas les utiliser pour un diagnostic de cohérence de l'écosystème.
+- `src/coordination.py` : `coordinate_branches()` retourne une liste réelle de `CoordinationTask` avec recommandations DELETE / PR_MERGE / CHERRY_PICK.
+- `src/meta_coherence.py` : `check_repo()` vérifie README.md, .gitignore, remote configuré et branche main/master.
+- `src/wal_writer.py` : WAL persistante sur disque (`.swarm/wal.jsonl`).
+- `src/cli.py` : commandes `alfred coordinate`, `alfred check`, `alfred wal-status`.
+- `runners/coordination_runner.py` : exécuteur de coordination avec WAL, gitex, syncx.
+- `runners/cross_repo_audit_runner.py` : audit inter-dépôts (GOVERNANCE-HUB, TOPOS, BRAIN, CTULU, KG-L).
+- `runners/agent_manager_fastapi.py` : API FastAPI (endpoints /alfred/*).
+
+## Limitations connues
+
+- `verify_meta_coherence()` dans `AlfredCoordinator` vérifie les repos passés en argument mais ne scanne pas automatiquement l'écosystème.
+- Aucun mécanisme de planification (cron-like) n'est encore implémenté.
+- L'API FastAPI n'est pas encore exposée en tant que service permanent.
