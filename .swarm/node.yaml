@@ -6,7 +6,7 @@ node:
   name: Alfred
   full_name: gerivdb/Alfred
   url: https://github.com/gerivdb/Alfred
-  layer: L1_CAUSALITY
+  layer: L0-CANON
   role: "Alfred orchestrator"
   lens: warm
   phi_cps: 1.0

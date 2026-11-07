@@ -2,7 +2,7 @@
 name: alfred
 version: "1.0.0"
 status: active
-layer: L0
+layer: L0-CANON
 type: citizen
 profile: STANDARD
 intent_hash: 0xALFRED_CONFIG_20261004
