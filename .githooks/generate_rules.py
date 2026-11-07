@@ -119,7 +119,7 @@ def generate_rules(manifest_path: str, repo_name: str, output_path: str) -> None
     redirect_items = [f"{k}:{v}" for k, v in redirects.items()]
     redirect_str = "|".join(redirect_items) if redirect_items else ""
 
-    now = datetime.datetime.now().isoformat()
+    now = "deterministic"
     brgs_version = routing.get("version", "3.0")
 
     content = f"""# .githooks/rules.sh - Auto-generated from multi-repo-governance.yaml
