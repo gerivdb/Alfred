@@ -53,3 +53,9 @@ reports = checker.check_repos(["gerivdb/GOVERNANCE-HUB", "gerivdb/CTULU"])
 - **Repo**: `gerivdb/Alfred` (L0-CANON)
 - **Entity Type**: CITIZEN
 - **Status**: active
+
+## Limitations connues (V1.0.0)
+
+- `src/coordination.py` : `coordinate_branches()` retourne `[]` (placeholder, aucune branche n'est coordonnée à l'exécution).
+- `src/meta_coherence.py` : `check_repo()` retourne toujours `is_coherent=True` (placeholder, aucune vérification réelle n'est effectuée).
+- Ces fonctions sont des **stubs** en attente d'implémentation réelle. Ne pas les utiliser pour un diagnostic de cohérence de l'écosystème.
